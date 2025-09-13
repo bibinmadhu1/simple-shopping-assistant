@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 function App() {
+  // 'http://localhost:3001'; //
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL ||   'https://musical-journey-jj7g7wrgpvvwfj7pq-3001.app.github.dev'; //'http://localhost:3001';
   const [products, setProducts] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,14 +17,15 @@ function App() {
   // Fetch initial products
   useEffect(() => {
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProducts = async (category = '') => {
     setIsLoading(true);
     try {
       const url = category 
-        ? `http://localhost:3001/api/products/category/${category}`
-        : 'http://localhost:3001/api/products';
+        ? `${API_BASE_URL}/api/products/category/${category}`
+        : `${API_BASE_URL}/api/products`;
       
       const response = await fetch(url);
       const data = await response.json();
@@ -38,7 +41,8 @@ function App() {
     
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/products/search?q=${searchQuery}`);
+      // (remove from here, move to top of file)
+      const response = await fetch(`${API_BASE_URL}/api/products/search?q=${searchQuery}`);
       const data = await response.json();
       setProducts(data);
     } catch (error) {
@@ -50,7 +54,7 @@ function App() {
   const getRecommendations = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/recommendations');
+      const response = await fetch(`${API_BASE_URL}/api/recommendations`);
       const data = await response.json();
       setRecommendations(data);
     } catch (error) {
@@ -69,7 +73,7 @@ function App() {
     
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/chat', {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
