@@ -33,7 +33,9 @@ app.get('/api/products/category/:category', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch products by category' });
   }
 });
-
+app.get('/', (req, res) => {
+  res.send('Success');
+});
 // Search products
 app.get('/api/products/search', async (req, res) => {
   try {
