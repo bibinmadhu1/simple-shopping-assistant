@@ -115,34 +115,35 @@ app.get('/api/recommendations', async (req, res) => {
 app.post('/api/chat', async (req, res) => {
   try {
     const { message } = req.body;
-    let response;
-    // Try Gemini first if API key is set
-    if (process.env.GEMINI_API_KEY) {
-      try {
-        const { getGeminiResponse } = require('./gemini');
-        response = await getGeminiResponse(message);
-      } catch (geminiError) {
-        console.error('Gemini error:', geminiError);
-        response = "Sorry, I couldn't process your request with Gemini. Please try again later.";
-      }
+    // Fallback: rule-based response
+    const lowerMessage = message.toLowerCase();
+    response = "I'm here to help with your shopping needs!";
+    if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+      response = "Hello! How can I assist with your shopping today?";
+    } else if (lowerMessage.includes('price') || lowerMessage.includes('cost')) {
+      response = "Our prices are very competitive. Which product are you interested in?";
+    } else if (lowerMessage.includes('shipping') || lowerMessage.includes('delivery')) {
+      response = "We offer free shipping on orders over $50. Delivery usually takes 3-5 business days.";
+    } else if (lowerMessage.includes('return') || lowerMessage.includes('exchange')) {
+      response = "We have a 30-day return policy. Items must be unused and in original packaging.";
+    } else if (lowerMessage.includes('electronics')) {
+      response = "We have a great selection of electronics including laptops, smartphones, and accessories. Check out our electronics category!";
+    } else if (lowerMessage.includes('clothing') || lowerMessage.includes('clothes')) {
+      response = "We offer a variety of men's and women's clothing. Is there a specific type you're looking for?";
+    } else if (lowerMessage.includes('jewelry')) {
+      response = "Our jewelry collection includes rings, necklaces, earrings, and more. All made with high-quality materials.";
     } else {
-      // Fallback: rule-based response
-      const lowerMessage = message.toLowerCase();
-      response = "I'm here to help with your shopping needs!";
-      if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
-        response = "Hello! How can I assist with your shopping today?";
-      } else if (lowerMessage.includes('price') || lowerMessage.includes('cost')) {
-        response = "Our prices are very competitive. Which product are you interested in?";
-      } else if (lowerMessage.includes('shipping') || lowerMessage.includes('delivery')) {
-        response = "We offer free shipping on orders over $50. Delivery usually takes 3-5 business days.";
-      } else if (lowerMessage.includes('return') || lowerMessage.includes('exchange')) {
-        response = "We have a 30-day return policy. Items must be unused and in original packaging.";
-      } else if (lowerMessage.includes('electronics')) {
-        response = "We have a great selection of electronics including laptops, smartphones, and accessories. Check out our electronics category!";
-      } else if (lowerMessage.includes('clothing') || lowerMessage.includes('clothes')) {
-        response = "We offer a variety of men's and women's clothing. Is there a specific type you're looking for?";
-      } else if (lowerMessage.includes('jewelry')) {
-        response = "Our jewelry collection includes rings, necklaces, earrings, and more. All made with high-quality materials.";
+      
+      let response;
+      // Try Gemini first if API key is set
+      if (process.env.GEMINI_API_KEY) {
+        try {
+          const { getGeminiResponse } = require('./gemini');
+          response = await getGeminiResponse(message);
+        } catch (geminiError) {
+          console.error('Gemini error:', geminiError);
+          response = "Sorry, I couldn't process your request with Gemini. Please try again later.";
+        }
       }
     }
     res.json({ response });
