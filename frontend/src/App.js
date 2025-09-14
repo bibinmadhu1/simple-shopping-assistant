@@ -1,6 +1,16 @@
 // Frontend (React) - App.js
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+// ChatMessageRenderer: pretty display for rich chat messages
+function ChatMessageRenderer({ text }) {
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+  );
+}
+
 
 function App() {
   // 'http://localhost:3001'; //
@@ -113,10 +123,10 @@ function App() {
           </div>
           
           <div className="category-buttons">
-            <button onClick={() => fetchProducts("men's clothing")}>Men's Clothing</button>
-            <button onClick={() => fetchProducts("women's clothing")}>Women's Clothing</button>
-            <button onClick={() => fetchProducts('jewelery')}>Jewelry</button>
-            <button onClick={() => fetchProducts('electronics')}>Electronics</button>
+            <button onClick={() => fetchProducts("womens-jewellery")}>womens-jewellery</button>
+            <button onClick={() => fetchProducts("kitchen-accessories")}>kitchen-accessories</button>
+            <button onClick={() => fetchProducts('smartphones')}>smartphones</button>
+            <button onClick={() => fetchProducts('laptops')}>laptops</button>
             <button onClick={getRecommendations}>Recommended for You</button>
           </div>
         </div>
@@ -146,8 +156,9 @@ function App() {
             <div className="chat-messages">
               {chatMessages.map((msg, index) => (
                 <div key={index} className={`message ${msg.sender}`}>
-                  {msg.text}
+                  <ChatMessageRenderer text={msg.text} />
                 </div>
+// ...existing code...
               ))}
               {isLoading && <div className="message assistant">Thinking...</div>}
             </div>
