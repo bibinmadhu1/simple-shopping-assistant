@@ -6,12 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 const ImageBanner = ({ config, selectedImage, onImageSelect }) => {
   const pickImage = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission required', 'Sorry, we need camera roll permissions to make this work!');
-        return;
-      }
-
+      // No need to request permissions separately - expo-image-picker handles it
       let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -69,7 +64,7 @@ const ImageBanner = ({ config, selectedImage, onImageSelect }) => {
         ) : (
           <TouchableOpacity style={styles.placeholderContainer} onPress={pickImage}>
             <IconButton
-              icon="image-plus"
+              icon="image"
               size={40}
               color="#666"
             />

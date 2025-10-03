@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { TextInput, Button, Card, Title, Slider, ColorPicker } from 'react-native-paper';
+import { TextInput, Button, Card, Title, Slider } from 'react-native-paper';
 
 const ConfigPanel = ({ config, onConfigChange, selectedImage, onImageSelect }) => {
   const colors = [
@@ -43,14 +43,16 @@ const ConfigPanel = ({ config, onConfigChange, selectedImage, onImageSelect }) =
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.colorGrid}>
               {colors.map((color, index) => (
-                <Button
-                  key={index}
-                  mode={config.textColor === color ? "contained" : "outlined"}
-                  style={[styles.colorButton, { backgroundColor: color }]}
-                  onPress={() => onConfigChange('textColor', color)}
-                >
-                  {' '}
-                </Button>
+                <View key={index} style={styles.colorButtonContainer}>
+                  <Button
+                    mode={config.textColor === color ? "contained" : "outlined"}
+                    style={[styles.colorButton, { backgroundColor: color }]}
+                    onPress={() => onConfigChange('textColor', color)}
+                    contentStyle={styles.colorButtonContent}
+                  >
+                    {' '}
+                  </Button>
+                </View>
               ))}
             </View>
           </ScrollView>
@@ -61,14 +63,16 @@ const ConfigPanel = ({ config, onConfigChange, selectedImage, onImageSelect }) =
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View style={styles.colorGrid}>
               {backgroundColors.map((color, index) => (
-                <Button
-                  key={index}
-                  mode={config.backgroundColor === color ? "contained" : "outlined"}
-                  style={[styles.colorButton, { backgroundColor: color }]}
-                  onPress={() => onConfigChange('backgroundColor', color)}
-                >
-                  {' '}
-                </Button>
+                <View key={index} style={styles.colorButtonContainer}>
+                  <Button
+                    mode={config.backgroundColor === color ? "contained" : "outlined"}
+                    style={[styles.colorButton, { backgroundColor: color }]}
+                    onPress={() => onConfigChange('backgroundColor', color)}
+                    contentStyle={styles.colorButtonContent}
+                  >
+                    {' '}
+                  </Button>
+                </View>
               ))}
             </View>
           </ScrollView>
@@ -109,6 +113,7 @@ const styles = StyleSheet.create({
   },
   slider: {
     width: '100%',
+    height: 40,
   },
   colorSection: {
     marginBottom: 20,
@@ -119,16 +124,20 @@ const styles = StyleSheet.create({
   },
   colorGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
     paddingVertical: 8,
+  },
+  colorButtonContainer: {
+    marginRight: 8,
   },
   colorButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 8,
     borderColor: '#ddd',
+  },
+  colorButtonContent: {
+    width: 40,
+    height: 40,
   },
   removeButton: {
     marginTop: 16,

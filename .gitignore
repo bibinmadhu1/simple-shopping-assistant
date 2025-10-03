@@ -38,3 +38,6 @@ BannerApp/.env.*.local
 BannerApp/.vscode/
 BannerApp/build/
 BannerApp/.expo/
+backend/.env
+backend-python/.env
+backend-python/shopping_assistant.db
