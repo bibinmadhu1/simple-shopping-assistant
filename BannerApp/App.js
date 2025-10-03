@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, SafeAreaView, ScrollView, Platform } from 'react-native';
 import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import ImageBanner from './components/ImageBanner';
 import ConfigPanel from './components/ConfigPanel';
@@ -22,6 +22,16 @@ export default function App() {
   });
 
   const [selectedImage, setSelectedImage] = useState(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // Simulate loading fonts or other assets
+    const timer = setTimeout(() => {
+      setIsReady(true);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const updateConfig = (key, value) => {
     setBannerConfig(prev => ({
@@ -29,6 +39,14 @@ export default function App() {
       [key]: value
     }));
   };
+
+  if (!isReady) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <PaperProvider theme={theme}>
@@ -59,5 +77,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
