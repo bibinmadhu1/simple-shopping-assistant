@@ -41,3 +41,9 @@ BannerApp/.expo/
 backend/.env
 backend-python/.env
 backend-python/shopping_assistant.db
+shopping-app/node_modules/
+backend-python/.env
+backend/.env
+shopping-app/.env
+shopping-app/.env.local
+shopping-app/package-lock.json

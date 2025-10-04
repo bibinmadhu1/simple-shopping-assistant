@@ -14,7 +14,9 @@ function ChatMessageRenderer({ text }) {
 
 function App() {
   // 'http://localhost:3001'; //
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL ||   'https://musical-journey-jj7g7wrgpvvwfj7pq-3001.app.github.dev/'; //'http://localhost:3001';
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL ||   
+          'https://musical-journey-jj7g7wrgpvvwfj7pq-3001.app.github.dev/'; //
+          //'http://localhost:3001';
   const [products, setProducts] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
