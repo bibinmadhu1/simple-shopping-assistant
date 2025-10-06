@@ -7,11 +7,13 @@ import requests
 import os
 from dotenv import load_dotenv
 from DatabaseManager import DatabaseManager, OrderDB, ReturnDB, UserDB
+import json
 
 
 load_dotenv()
 app = Flask(__name__)
 CORS(app)
+
 
 PORT = int(os.getenv('PORT', 3001))
 
@@ -141,8 +143,90 @@ def chatold():
     except Exception as e:
         print('Chat error:', e)
         return jsonify({'error': 'Failed to process message'}), 500
+    
+def fetch_product_details( product_query):
+        """
+        Fetches product details from DummyJSON based on a search query.
+        Returns the first matching product as a dictionary, or None if not found or an error occurs.
+        """
+        try:
+            search_url = f"{DUMMY_JSON_API}/search?q={product_query}"
 
-def analyze_user_input_with_gemini(self, user_input):
+            print(f"Fetching product from: {search_url}")
+
+            response = requests.get(search_url)
+            response.raise_for_status()
+
+            data = response.json()
+            print(f"Search results: {data}" )  # Debug: print the entire response data
+            if data and data.get('products'):
+                return data['products'][0]
+            else:
+                return None
+
+        except requests.exceptions.HTTPError as http_err:
+            print(f"HTTP error occurred: {http_err} - Status Code: {response.status_code}")
+            return None
+        except requests.exceptions.ConnectionError as conn_err:
+            print(f"Connection error occurred: {conn_err}")
+            return None
+        except requests.exceptions.Timeout as timeout_err:
+            print(f"Timeout error occurred: {timeout_err}")
+            return None
+        except requests.exceptions.RequestException as req_err:
+            print(f"An unexpected request error occurred: {req_err}")
+            return None
+        except json.JSONDecodeError as json_err:
+            print(f"Error decoding JSON response: {json_err}")
+            # print(f"Response content: {response.text}") # Uncomment for more verbose debugging
+            return None
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return None
+import re
+
+def parse_gemini_json_response(gemini_response):
+    """
+    Extracts and parses the JSON content from a Gemini API GenerateContentResponse.
+    
+    Args:
+        gemini_response: The response object from the Gemini API.
+
+    Returns:
+        A Python dictionary parsed from the JSON string.
+    
+    Raises:
+        ValueError: If the response is empty or does not contain valid JSON.
+    """
+    print (gemini_response)
+    
+    # 1. Get the raw text content
+    # The .text property is correct for getting the full string output.
+    raw_text = gemini_response.text
+
+    if not raw_text:
+         raise ValueError("Gemini response is empty (response.text is an empty string).")
+    
+    # 2. Use a regular expression to strip the Markdown code fences.
+    # This specifically looks for "```json\n" at the start and "\n```" at the end.
+    # The 're.DOTALL' flag allows '.' to match newline characters.
+    json_match = re.search(r"```json\n(.*?)\n```", raw_text, re.DOTALL)
+    
+    if json_match:
+        # The first captured group (group 1) is the pure JSON string
+        json_string = json_match.group(1).strip()
+    else:
+        # Fallback: assume the model didn't wrap it and try to load the raw text
+        # after stripping leading/trailing whitespace.
+        json_string = raw_text.strip()
+        # You might want to add a log/warning here if it wasn't wrapped.
+
+    # 3. Load the clean JSON string into a Python dictionary
+    agent_decision = json.loads(json_string)
+    
+    return agent_decision
+
+def analyze_user_input_with_gemini( user_input):
         """Uses Gemini to determine intent and extract entities from user input."""
         if not GEMINI_ENABLED:
             return {'intent': 'unknown', 'entities': {}} # Fallback if Gemini not configured
@@ -192,7 +276,8 @@ def analyze_user_input_with_gemini(self, user_input):
 
         try:
             gemini_response = get_gemini_response(prompt_for_gemini)
-            agent_decision = json.loads(gemini_response.text)
+            # agent_decision = json.loads(gemini_response.text)
+            agent_decision = parse_gemini_json_response(gemini_response)
             return agent_decision
         except Exception as e:
             print(f"Error parsing Gemini response or communicating with Gemini: {e}")
@@ -207,7 +292,7 @@ def chat():
         if GEMINI_ENABLED:
             try:
                 # Assuming 'gemini_session_id', 'user_db', 'analyze_user_input_with_gemini',
-                # 'fetch_product_details', 'self.user_db', 'self.order_db', 'self.return_db'
+                # 'fetch_product_details', 'user_db', 'order_db', 'return_db'
                 # are defined or accessible in this scope if this is not a class method,
                 # or 'self' implies this is a method and they are attributes of 'self'.
                 # Given the context of previous discussions, these would likely be
@@ -243,7 +328,7 @@ def chat():
 
                     if not user:
                         if name and address and payment:
-                            user_id = self.user_db.create_user(gemini_session_id, name, address, payment)
+                            user_id = user_db.create_user(gemini_session_id, name, address, payment)
                             if user_id:
                                 response_text = f"Thanks, {name}! I've saved your details. Now you can place orders."
                             else:
@@ -264,14 +349,14 @@ def chat():
                     if product_name and quantity:
                         product = fetch_product_details(product_name)
                         if product:
-                            order_id = self.order_db.create_order(user['id'], product['id'], product['title'],
+                            order_id = order_db.create_order(user['id'], product['id'], product['title'],
                                                                   quantity, product['price'], status='pending' if intent == 'add_to_cart' else 'shipped')
                             if order_id:
                                 if intent == 'add_to_cart':
                                     response_text = f"Added {quantity} x {product['title']} to your pending order. Your pending order ID is {order_id}. You can proceed to checkout anytime."
                                 else:
                                     response_text = f"Great! Your order for {quantity} x {product['title']} has been placed (Order ID: {order_id}). It will be shipped to {user['address']} and charged to {user['payment_method']}."
-                                    self.order_db.update_order_status(order_id, 'shipped')
+                                    order_db.update_order_status(order_id, 'shipped')
                             else:
                                 response_text = "Something went wrong while creating your order."
                         else:
@@ -283,7 +368,7 @@ def chat():
                     if not user:
                         response_text = "Please log in first so I can retrieve your orders."
                     else:
-                        orders = self.order_db.get_user_orders(user['id'])
+                        orders = order_db.get_user_orders(user['id'])
                         if orders:
                             order_list = "\n".join([f"Order ID: {o['id']}, Product: {o['product_name']} ({o['quantity']}), Total: ${o['total_amount']:.2f}, Status: {o['status']}" for o in orders])
                             response_text = f"Here are your recent orders:\n{order_list}"
@@ -297,12 +382,12 @@ def chat():
                         order_id = entities.get('order_id')
                         reason = entities.get('reason')
                         if order_id and reason:
-                            order = self.order_db.get_order_details(order_id)
+                            order = order_db.get_order_details(order_id)
                             if order and order['user_id'] == user['id']:
                                 if order['status'] in ['delivered', 'shipped']:
-                                    return_id = self.return_db.request_return(order_id, reason)
+                                    return_id = return_db.request_return(order_id, reason)
                                     if return_id:
-                                        self.order_db.update_order_status(order_id, 'return_requested')
+                                        order_db.update_order_status(order_id, 'return_requested')
                                         response_text = f"Return for Order ID {order_id} has been requested with reason: '{reason}'. We will process it shortly. Your return request ID is {return_id}."
                                     else:
                                         response_text = "Failed to process your return request."
@@ -327,7 +412,8 @@ def chat():
         # If the original intent was to return 'response_text' from the inner blocks directly,
         # that would need a re-evaluation of the 'response' variable's purpose.
         # For pure formatting, 'response' gets assigned.
-        return response
+        from flask import jsonify
+        return jsonify({'response': response})
     except Exception as e:
         print('Chat error:', e)
         # Assuming `jsonify` is imported from Flask or similar

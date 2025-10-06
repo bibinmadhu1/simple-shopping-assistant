@@ -14,12 +14,14 @@ if not GEMINI_API_KEY:
 
 genai.configure(api_key=GEMINI_API_KEY)
 
-def get_gemini_response(prompt: str) -> str:
+def get_gemini_response(prompt: str):
     try:
         model = genai.GenerativeModel('gemini-2.0-flash')
         response = model.generate_content(prompt)
         # The response.text contains the generated text
-        return response.text if hasattr(response, 'text') else str(response)
+        print(response)
+        #return response.text if hasattr(response, 'text') else str(response)
+        return response
     except Exception as e:
         print('Gemini API error:', e)
         raise
